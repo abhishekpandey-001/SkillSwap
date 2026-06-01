@@ -13,7 +13,7 @@ export const updateMe = async (req, res) => {
     const updated = await User.findByIdAndUpdate(
       req.user._id,
       { skillsOffered, skillsWanted },
-      { new: true },
+      { returnDocument: "after" },
     ).select("-password");
 
     return res.json(updated);
