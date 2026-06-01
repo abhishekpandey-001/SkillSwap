@@ -10,14 +10,12 @@ export const updateMe = async (req, res) => {
   const { skillsOffered, skillsWanted } = req.body;
 
   try {
-    const user = await User.findByIdAndUpdate(req._user._id);
+    const updated = await User.findByIdAndUpdate(
+      req.user._id,
+      { skillsOffered, skillsWanted },
+      { new: true },
+    ).select("-password");
 
-    user.skillsOffered = skillsOffered;
-    user.skillsWanted = skillsWanted;
-
-    await user.save();
-
-    const updated = await User.findById(req.user._id).select("-password");
     return res.json(updated);
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });
@@ -30,6 +28,7 @@ export const getAllUsers = async (req, res) => {
     const users = await User.find({ _id: { $ne: req.user._id } }).select(
       "-password",
     );
+    return res.json(users);
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });
   }
