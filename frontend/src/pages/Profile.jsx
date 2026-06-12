@@ -1,137 +1,201 @@
-
-import { User, Mail, Plus, X, Save } from 'lucide-react';
+import { useState, useEffect } from "react";
+import API from "../api/axios.js";
 
 const Profile = () => {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-[#06141B] p-4 relative overflow-hidden">
-      
-      {/* Ambient Background Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#253745] rounded-full blur-[150px] opacity-30 pointer-events-none" />
+  const [profile, setProfile] = useState(null);
+  const [skillsOffered, setSkillsOffered] = useState([]);
+  const [skillsWanted, setSkillsWanted] = useState([]);
+  const [offeredInput, setOfferedInput] = useState("");
+  const [wantedInput, setWantedInput] = useState("");
+  const [message, setMessage] = useState("");
 
-      {/* Main Glassmorphism Card */}
-      <div className="w-full max-w-2xl bg-[#253745]/70 backdrop-blur-xl rounded-[18px] p-8 shadow-[0_8px_30px_rgba(0,0,0,0.35)] border border-white/[0.06] relative z-10">
-        
-        {/* Header */}
-        <div className="mb-8 space-y-2">
-          <h2 className="text-2xl font-semibold text-[#CCD0CF] tracking-tight">
-            Your Profile
-          </h2>
-          <p className="text-[#9BA8AB] text-sm">
-            Manage your personal details and skill exchange preferences.
-          </p>
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const { data } = await API.get("/users/me");
+
+        setProfile(data);
+        setSkillsOffered(data.skillsOffered || []);
+        setSkillsWanted(data.skillsWanted || []);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
+  const addOffered = () => {
+    if (!offeredInput.trim()) return;
+    setSkillsOffered([...skillsOffered, offeredInput.trim()]);
+    setOfferedInput("");
+  };
+
+  const addWanted = () => {
+    if (!wantedInput.trim()) return;
+    setSkillsWanted([...skillsWanted, wantedInput.trim()]);
+    setWantedInput("");
+  };
+
+  const removeSkill = (list, setList, index) => {
+    setList(list.filter((_, i) => i !== index));
+  };
+
+  const handleSave = async () => {
+    try {
+      await API.put("/users/me", {
+        skillsOffered,
+        skillsWanted,
+      });
+
+      setMessage("Profile saved successfully!");
+    } catch (err) {
+      setMessage("Failed to save profile");
+    }
+  };
+
+  if (!profile) {
+    return (
+      <div className="min-h-screen bg-[#1A1A1D] flex items-center justify-center text-white text-2xl">
+        Loading...
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen relative overflow-hidden bg-[#1A1A1D] text-white px-4 md:px-8 py-10">
+      {/* Background Glow */}
+      <div className="absolute top-[-150px] left-[-100px] h-[350px] w-[350px] rounded-full bg-[#CA2851]/20 blur-[140px]" />
+      <div className="absolute bottom-[-150px] right-[-100px] h-[350px] w-[350px] rounded-full bg-[#FFB173]/20 blur-[140px]" />
+
+      <div className="relative max-w-5xl mx-auto space-y-8">
+
+        {/* Profile Card */}
+        <div className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-3xl p-6 md:p-8 shadow-[0_8px_40px_rgba(255,103,102,0.15)]">
+          <h1 className="text-4xl md:text-5xl font-bold mb-8 pb-2 bg-gradient-to-r from-[#CA2851] via-[#FF6766] to-[#FFE3B3] bg-clip-text text-transparent">
+            My Profile
+          </h1>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            <div>
+              <p className="text-gray-400 mb-1">Name</p>
+              <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
+                {profile.name}
+              </div>
+            </div>
+
+            <div>
+              <p className="text-gray-400 mb-1">Email</p>
+              <div className="bg-white/5 rounded-2xl p-4 border border-white/10 break-all">
+                {profile.email}
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Purely Visual Form */}
-        <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
-          
-          {/* Read-Only Information Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            
-            {/* Read-Only Name */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-[#9BA8AB] ml-1">
-                Full Name
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <User className="h-5 w-5 text-[#9BA8AB]/60" />
-                </div>
-                <input 
-                  type="text" 
-                  value="John Doe"
-                  readOnly
-                  className="w-full bg-[#11212D]/50 text-[#CCD0CF]/70 rounded-[14px] pl-11 pr-4 py-3.5 outline-none border border-white/[0.02] cursor-not-allowed"
-                />
+        {/* Skills Offered */}
+        <div className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-3xl p-6 md:p-8 shadow-[0_8px_40px_rgba(255,103,102,0.15)]">
+          <h2 className="text-2xl font-bold text-[#FFB173] mb-6">
+            Skills I Offer
+          </h2>
+
+          <div className="flex flex-wrap gap-3 mb-6">
+            {skillsOffered.map((skill, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-3 px-4 py-2 rounded-full bg-white/5 backdrop-blur-lg border border-[#FF6766]/30 hover:border-[#FF6766] transition-all"
+              >
+                <span>{skill}</span>
+
+                <button
+                  onClick={() =>
+                    removeSkill(skillsOffered, setSkillsOffered, i)
+                  }
+                  className="w-6 h-6 rounded-full bg-red-500/20 hover:bg-red-500 flex items-center justify-center transition-all"
+                >
+                  ×
+                </button>
               </div>
-            </div>
+            ))}
+          </div>
 
-            {/* Read-Only Email */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-[#9BA8AB] ml-1">
-                Email Address
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-[#9BA8AB]/60" />
-                </div>
-                <input 
-                  type="email" 
-                  value="name@example.com"
-                  readOnly
-                  className="w-full bg-[#11212D]/50 text-[#CCD0CF]/70 rounded-[14px] pl-11 pr-4 py-3.5 outline-none border border-white/[0.02] cursor-not-allowed"
-                />
+          <div className="flex flex-col md:flex-row gap-4">
+            <input
+              value={offeredInput}
+              onChange={(e) => setOfferedInput(e.target.value)}
+              placeholder="e.g. React"
+              onKeyDown={(e) => e.key === "Enter" && addOffered()}
+              className="flex-1 bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl px-5 py-4 outline-none focus:border-[#FF6766] focus:ring-2 focus:ring-[#FF6766]/30 transition-all"
+            />
+
+            <button
+              onClick={addOffered}
+              className="px-8 py-4 rounded-2xl font-semibold bg-gradient-to-r from-[#CA2851] to-[#FF6766] shadow-lg hover:scale-105 transition-all"
+            >
+              Add
+            </button>
+          </div>
+        </div>
+
+        {/* Skills Wanted */}
+        <div className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-3xl p-6 md:p-8 shadow-[0_8px_40px_rgba(255,103,102,0.15)]">
+          <h2 className="text-2xl font-bold text-[#FFE3B3] mb-6">
+            Skills I Want
+          </h2>
+
+          <div className="flex flex-wrap gap-3 mb-6">
+            {skillsWanted.map((skill, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-3 px-4 py-2 rounded-full bg-white/5 backdrop-blur-lg border border-[#FFB173]/30 hover:border-[#FFB173] transition-all"
+              >
+                <span>{skill}</span>
+
+                <button
+                  onClick={() =>
+                    removeSkill(skillsWanted, setSkillsWanted, i)
+                  }
+                  className="w-6 h-6 rounded-full bg-red-500/20 hover:bg-red-500 flex items-center justify-center transition-all"
+                >
+                  ×
+                </button>
               </div>
-            </div>
+            ))}
           </div>
 
-          <div className="h-px w-full bg-white/[0.06] my-6" /> {/* Divider */}
+          <div className="flex flex-col md:flex-row gap-4">
+            <input
+              value={wantedInput}
+              onChange={(e) => setWantedInput(e.target.value)}
+              placeholder="e.g. Node.js"
+              onKeyDown={(e) => e.key === "Enter" && addWanted()}
+              className="flex-1 bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl px-5 py-4 outline-none focus:border-[#FF6766] focus:ring-2 focus:ring-[#FF6766]/30 transition-all"
+            />
 
-          {/* Skills I Offer Section */}
-          <div className="space-y-3">
-            <label className="text-sm font-medium text-[#9BA8AB] ml-1">
-              Skills I Offer
-            </label>
-            <div className="flex gap-2">
-              <input 
-                type="text" 
-                placeholder="e.g. Python, Guitar"
-                className="flex-1 bg-[#11212D] text-[#CCD0CF] placeholder-[#9BA8AB]/40 rounded-[14px] px-4 py-3.5 outline-none border border-white/[0.02] focus:border-[#4A5C6A] focus:bg-[#11212D]/90 transition-all duration-300"
-              />
-              <button className="bg-[#4A5C6A]/90 hover:bg-[#4A5C6A] text-[#CCD0CF] rounded-[14px] px-5 py-3.5 flex items-center justify-center gap-2 transition-all duration-300 transform active:scale-[0.98] border border-white/[0.06] hover:shadow-lg">
-                <Plus className="h-5 w-5" />
-                <span className="hidden sm:inline font-medium">Add</span>
-              </button>
-            </div>
-            {/* Visual Tags/Chips */}
-            <div className="flex flex-wrap gap-2 mt-2">
-              {['Python', 'Guitar'].map((skill, index) => (
-                <div key={index} className="flex items-center gap-2 bg-[#11212D] text-[#CCD0CF] text-sm px-3 py-1.5 rounded-full border border-white/[0.04] shadow-sm">
-                  {skill}
-                  <button className="text-[#9BA8AB] hover:text-[#CCD0CF] transition-colors">
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              ))}
-            </div>
+            <button
+              onClick={addWanted}
+              className="px-8 py-4 rounded-2xl font-semibold bg-gradient-to-r from-[#FF6766] to-[#FFB173] shadow-lg hover:scale-105 transition-all"
+            >
+              Add
+            </button>
           </div>
+        </div>
 
-          {/* Skills I Want Section */}
-          <div className="space-y-3">
-            <label className="text-sm font-medium text-[#9BA8AB] ml-1">
-              Skills I Want
-            </label>
-            <div className="flex gap-2">
-              <input 
-                type="text" 
-                placeholder="e.g. Spanish, Chess"
-                className="flex-1 bg-[#11212D] text-[#CCD0CF] placeholder-[#9BA8AB]/40 rounded-[14px] px-4 py-3.5 outline-none border border-white/[0.02] focus:border-[#4A5C6A] focus:bg-[#11212D]/90 transition-all duration-300"
-              />
-              <button className="bg-[#4A5C6A]/90 hover:bg-[#4A5C6A] text-[#CCD0CF] rounded-[14px] px-5 py-3.5 flex items-center justify-center gap-2 transition-all duration-300 transform active:scale-[0.98] border border-white/[0.06] hover:shadow-lg">
-                <Plus className="h-5 w-5" />
-                <span className="hidden sm:inline font-medium">Add</span>
-              </button>
-            </div>
-            {/* Visual Tags/Chips */}
-            <div className="flex flex-wrap gap-2 mt-2">
-              {['Spanish', 'Chess'].map((skill, index) => (
-                <div key={index} className="flex items-center gap-2 bg-[#11212D] text-[#CCD0CF] text-sm px-3 py-1.5 rounded-full border border-white/[0.04] shadow-sm">
-                  {skill}
-                  <button className="text-[#9BA8AB] hover:text-[#CCD0CF] transition-colors">
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Save Profile Button */}
-          <button 
-            className="w-full mt-6 bg-[#4A5C6A]/90 hover:bg-[#4A5C6A] text-[#CCD0CF] font-medium rounded-[14px] py-3.5 flex items-center justify-center gap-2 transition-all duration-300 transform active:scale-[0.98] border border-white/[0.06] hover:shadow-lg"
+        {/* Save Button */}
+        <div className="flex justify-center">
+          <button
+            onClick={handleSave}
+            className="px-10 py-4 rounded-3xl font-semibold text-lg bg-gradient-to-r from-[#CA2851] via-[#FF6766] to-[#FFB173] shadow-[0_10px_40px_rgba(255,103,102,0.25)] hover:scale-105 hover:shadow-[0_15px_50px_rgba(255,103,102,0.35)] transition-all duration-300"
           >
-            <Save className="h-4 w-4" />
             Save Profile
           </button>
-        </form>
+        </div>
+
+        {message && (
+          <div className="text-center text-[#FFE3B3] text-lg">
+            {message}
+          </div>
+        )}
       </div>
     </div>
   );
