@@ -1,109 +1,126 @@
-
-import { Mail, Lock, ArrowRight } from 'lucide-react';
-import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
-import API from '../api/axios'
+import { Mail, Lock, ArrowRight } from "lucide-react";
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import API from "../api/axios";
 
 const Login = () => {
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
-  const { login } = useAuth()
-  const navigate = useNavigate()
-  const [form, setForm] = useState({ email: '', password: '' })
-  const [error, setError] = useState('')
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+  });
+
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value })
-  }
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value,
+    });
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    try {
-      const { data } = await API.post('/auth/login', form)
-      login(data.user, data.token)
-      navigate('/')
-    } catch (err) {
-      setError(err.response?.data?.message || 'Something went wrong')
-    }
-  }
+    e.preventDefault();
 
+    try {
+      const { data } = await API.post("/auth/login", form);
+
+      login(data.user, data.token);
+
+      navigate("/");
+    } catch (err) {
+      setError(err.response?.data?.message || "Something went wrong");
+    }
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#06141B] p-4 relative overflow-hidden">
-      
-      {/* Subtle ambient glow for the modern SaaS aesthetic */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#253745] rounded-full blur-[150px] opacity-30 pointer-events-none" />
+    <div className="min-h-screen flex items-center justify-center bg-[#1A1A1D] p-4 relative overflow-hidden">
 
-      {/* Main Glassmorphism Card */}
-      <div className="w-full max-w-md bg-[#253745]/70 backdrop-blur-xl rounded-[18px] p-8 shadow-[0_8px_30px_rgba(0,0,0,0.35)] border border-white/[0.06] relative z-10">
-        
+      {/* Background Glow */}
+      <div className="absolute top-[-150px] left-[-100px] h-[350px] w-[350px] rounded-full bg-[#CA2851]/20 blur-[140px]" />
+
+      <div className="absolute bottom-[-150px] right-[-100px] h-[350px] w-[350px] rounded-full bg-[#FFB173]/20 blur-[140px]" />
+
+      {/* Card */}
+      <div className="w-full max-w-md bg-white/5 backdrop-blur-2xl rounded-3xl p-8 shadow-[0_10px_40px_rgba(255,103,102,0.12)] border border-white/10 relative z-10">
+
         {/* Header */}
-        <div className="mb-8 space-y-2">
-          <h2 className="text-2xl font-semibold text-[#CCD0CF] tracking-tight">
+        <div className="mb-8">
+          <h2 className="text-3xl font-bold leading-normal pb-1 bg-gradient-to-r from-[#CA2851] via-[#FF6766] to-[#FFE3B3] bg-clip-text text-transparent">
             Welcome back
           </h2>
-          {error && <p>{error}</p>}
-          <p className="text-[#9BA8AB] text-sm">
+
+          <p className="text-gray-400 mt-2">
             Enter your details to access your account.
           </p>
+
+          {error && (
+            <div className="mt-4 rounded-2xl border border-red-400/20 bg-red-400/10 px-4 py-3 text-red-300 text-sm">
+              {error}
+            </div>
+          )}
         </div>
 
-        {/* Purely Visual Form */}
+        {/* Form */}
         <form className="space-y-5" onSubmit={handleSubmit}>
-          
-          {/* Email Input Group */}
+
+          {/* Email */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-[#9BA8AB] ml-1">
+            <label className="text-sm font-medium text-gray-400 ml-1">
               Email Address
             </label>
-            <div className="relative group">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <Mail className="h-5 w-5 text-[#9BA8AB] group-focus-within:text-[#CCD0CF] transition-colors duration-300" />
-              </div>
+
+            <div className="relative">
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+
               <input
                 onChange={handleChange}
-                name='email'
-                type="email" 
+                name="email"
+                type="email"
                 placeholder="name@example.com"
-                className="w-full bg-[#11212D] text-[#CCD0CF] placeholder-[#9BA8AB]/40 rounded-[14px] pl-11 pr-4 py-3.5 outline-none border border-white/[0.02] focus:border-[#4A5C6A] focus:bg-[#11212D]/90 transition-all duration-300"
+                className="w-full bg-white/5 border border-white/10 rounded-2xl pl-12 pr-4 py-4 text-white placeholder-gray-500 outline-none focus:border-[#FF6766] focus:ring-2 focus:ring-[#FF6766]/20 transition-all"
               />
             </div>
           </div>
 
-          {/* Password Input Group */}
+          {/* Password */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-[#9BA8AB] ml-1">
+            <label className="text-sm font-medium text-gray-400 ml-1">
               Password
             </label>
-            <div className="relative group">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <Lock className="h-5 w-5 text-[#9BA8AB] group-focus-within:text-[#CCD0CF] transition-colors duration-300" />
-              </div>
+
+            <div className="relative">
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+
               <input
                 onChange={handleChange}
-                name='password'
-                type="password" 
+                name="password"
+                type="password"
                 placeholder="••••••••"
-                className="w-full bg-[#11212D] text-[#CCD0CF] placeholder-[#9BA8AB]/40 rounded-[14px] pl-11 pr-4 py-3.5 outline-none border border-white/[0.02] focus:border-[#4A5C6A] focus:bg-[#11212D]/90 transition-all duration-300"
+                className="w-full bg-white/5 border border-white/10 rounded-2xl pl-12 pr-4 py-4 text-white placeholder-gray-500 outline-none focus:border-[#FF6766] focus:ring-2 focus:ring-[#FF6766]/20 transition-all"
               />
             </div>
           </div>
 
-          {/* Login Button */}
-          <button 
-            className="w-full mt-4 bg-[#4A5C6A]/90 hover:bg-[#4A5C6A] text-[#CCD0CF] font-medium rounded-[14px] py-3.5 flex items-center justify-center gap-2 transition-all duration-300 transform active:scale-[0.98] border border-white/[0.06] hover:shadow-lg"
+          {/* Button */}
+          <button
+            className="w-full mt-2 rounded-2xl py-4 font-semibold flex items-center justify-center gap-2 bg-gradient-to-r from-[#CA2851] via-[#FF6766] to-[#FFB173] shadow-[0_10px_40px_rgba(255,103,102,0.25)] hover:scale-[1.02] transition-all duration-300 active:scale-[0.98]"
           >
             Login
             <ArrowRight className="h-4 w-4" />
           </button>
         </form>
 
-        {/* Footer Link */}
+        {/* Footer */}
         <div className="mt-8 text-center">
-          <p className="text-[#9BA8AB] text-sm">
-            Don't have an account?{' '}
-            <Link to={"/register"}
-              className="text-[#CCD0CF] hover:text-white font-medium transition-colors duration-300 underline-offset-4 hover:underline"
+          <p className="text-gray-400 text-sm">
+            Don't have an account?{" "}
+            <Link
+              to="/register"
+              className="text-[#FFE3B3] hover:text-white font-medium transition-colors duration-300"
             >
               Register
             </Link>
